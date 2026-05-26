@@ -1,7 +1,9 @@
 import os
+from datetime import datetime
 from typing import Dict, List, Any, Optional
 from flask import Flask, jsonify, request, Response
 from models import init_db, db, Dog, Breed
+from models.dog import AdoptionStatus
 
 # Get the server directory path
 base_dir: str = os.path.abspath(os.path.dirname(__file__))
@@ -77,7 +79,38 @@ def get_dog(id: int) -> tuple[Response, int] | Response:
     
     return jsonify(dog)
 
-## HERE
+@app.route('/api/pets/<int:id>/adopt', methods=['POST'])
+def adopt_pet(id: int) -> tuple[Response, int] | Response:
+    dog = db.session.get(Dog, id)
+
+    if not dog:
+        return jsonify({"error": "Pet not found"}), 404
+
+    dog.status = AdoptionStatus.ADOPTED
+    dog.adoption_date = datetime.utcnow()
+    db.session.commit()
+
+    updated_dog_query = db.session.query(
+        Dog.id,
+        Dog.name,
+        Breed.name.label('breed'),
+        Dog.age,
+        Dog.description,
+        Dog.gender,
+        Dog.status
+    ).join(Breed, Dog.breed_id == Breed.id).filter(Dog.id == id).first()
+
+    updated_dog: Dict[str, Any] = {
+        'id': updated_dog_query.id,
+        'name': updated_dog_query.name,
+        'breed': updated_dog_query.breed,
+        'age': updated_dog_query.age,
+        'description': updated_dog_query.description,
+        'gender': updated_dog_query.gender,
+        'status': updated_dog_query.status.name
+    }
+
+    return jsonify(updated_dog)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5100) # Port 5100 to avoid macOS conflicts
