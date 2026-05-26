@@ -31,7 +31,19 @@ try {
         {error}
       </div>
     ) : dog ? (
-      <DogDetails dog={dog} />
+      <>
+        <DogDetails dog={dog} />
+        <div class="mt-6">
+          <button
+            id="adopt-button"
+            data-dog-id={dog.id}
+            class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all duration-300 inline-flex items-center"
+          >
+            Adopt
+          </button>
+          <span id="adopted-confirmation" class="hidden text-emerald-400 font-medium">Adopted ✅</span>
+        </div>
+      </>
     ) : (
       <div class="bg-slate-800/60 backdrop-blur-sm rounded-xl p-6">
         <p class="text-slate-400">No dog information available</p>
@@ -48,3 +60,28 @@ try {
     </div>
   </div>
 </Layout>
+
+<script is:inline define:vars={{ API_SERVER_URL }}>
+  const adoptButton = document.getElementById('adopt-button');
+  const adoptedConfirmation = document.getElementById('adopted-confirmation');
+
+  if (adoptButton && adoptedConfirmation) {
+    adoptButton.addEventListener('click', async () => {
+      const dogId = adoptButton.getAttribute('data-dog-id');
+      if (!dogId) return;
+
+      try {
+        const response = await fetch(`${API_SERVER_URL}/api/pets/${dogId}/adopt`, {
+          method: 'POST'
+        });
+
+        if (response.ok) {
+          adoptButton.classList.add('hidden');
+          adoptedConfirmation.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Failed to adopt pet', error);
+      }
+    });
+  }
+</script>
