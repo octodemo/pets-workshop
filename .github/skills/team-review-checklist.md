@@ -1,13 +1,7 @@
 ---
 name: team-review-checklist
 description: Team review rules applied automatically to every pull request — covers test coverage for new endpoints and Microsoft REST API error envelope compliance.
-version: 0.1.0
-scopes:
-  - code-review
-  - coding-agent
-owners:
-  - elbruno
-  - april-yoho
+license: MIT
 ---
 
 # Team Review Checklist
